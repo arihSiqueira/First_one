@@ -5,12 +5,12 @@ import java.sql.Statement;
 
 
 
-public class ConnectionFactory {
+public class BancoTeste{
 	
 	private Statement executor;
 	private Connection con;
 	
-	public ConnectionFactory(){
+	public BancoTeste(){
 		try{
 			con = DriverManager.getConnection("jdbc:derby:OficioReceita;create=true");
 			executor = con.createStatement();		
