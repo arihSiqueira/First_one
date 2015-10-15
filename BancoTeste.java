@@ -13,19 +13,21 @@ public class BancoTeste{
 	public BancoTeste(){
 		try{
 			con = DriverManager.getConnection("jdbc:derby:OficioReceita;create=true");
-			executor = con.createStatement();		
-			if(!existeTabela("oficioReceita")){
-				criaOficio();}
+			executor = con.createStatement();
 			if(!existeTabela("oficioJuiz")){
 				criarJuiz();}
 			if(!existeTabela("chefesSetec")){
 				criarChefes();}
-			if(!existeTabela("oficioResposta")){
-				criarOficioResposta();}
 			if(!existeTabela("varaOficio")){
 				criarTableVara();}
+			if(!existeTabela("oficioReceita")){
+				criaOficio();}
+			if(!existeTabela("oficioResposta")){
+				criarOficioResposta();}
 			if(!existeTabela("juiz_vara")){
 				criarJuizVara();}
+			if(!existeTabela("oficio_resposta")){
+				criarOficioResp();}
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -67,22 +69,26 @@ public class BancoTeste{
 	      +  " pa VARCHAR(32) NOT NULL ,"
 		  +  " nome_servidor VARCHAR(32) NOT NULL, "
 	      +  " cpf_servidor  VARCHAR(32) NOT NULL,"
-	      +  " Juiz VARCHAR(32)  NOT NULL,"
-		  +  " vara VARCHAR(32) NOT NULL,"
-	      +  " chefe VARCHAR(32) NOT NULL,"
-		  +  " resposta VARCHAR(120) NOT NULL)";
+	      +  " cod_juiz int  NOT NULL references oficioJuiz,"
+	      +  " cod_chefe int NOT NULL references chefesSetec)";
 		
 		executor.execute(createString);
+	}
+	
+	private void criarOficioResp() throws SQLException{
+		String create = " CREATE TABLE oficio_resposta"
+				+ "(cod_oficio INT NOT NULL REFERENCES oficioReceita(COD),"
+				+ " cod_resp INT NOT NULL REFERENCES oficioResposta(cod_resp),"
+				+ " CONSTRAINT oficioResp_pk PRIMARY KEY (cod_oficio, cod_resp))";
+		
+		executor.execute(create);
 	}
 	
 	private void criarJuiz() throws SQLException{
 		String createString = "CREATE TABLE oficioJuiz "
 		  + "( cod_juiz INT NOT NULL GENERATED ALWAYS AS IDENTITY " 
 	      +  " CONSTRAINT CodJuiz_PK PRIMARY KEY, " 
-	      +  " nomeJuiz VARCHAR(32) NOT NULL, "
-	      +  " vara VARCHAR(32) NOT NULL,"
-	      +  " vara2 VARCHAR(32) ,"
-	      +  " vara3 VARCHAR(32) )";
+	      +  " nomeJuiz VARCHAR(32) NOT NULL)";
 		  executor.execute(createString);
 	}
 	
@@ -107,16 +113,17 @@ public class BancoTeste{
 	
 	private void criarTableVara() throws SQLException{
 		String create = "CREATE TABLE varaOficio"
-				+"(COD INT NOT NULL GENERATED ALWAYS AS IDENTITY"
-				+ " CONSTRAINT VARA_PK PRIMARY KEY,  "
+				+"(COD INT NOT NULL GENERATED ALWAYS AS IDENTITY "
+				+ "CONSTRAINT VARA_PK PRIMARY KEY,  "
 				+"poder_vara VARCHAR(32),"
-				+"nome_vara  VARCHAR(32) NOT NULL,"
+				+"nome_vara VARCHAR(32) NOT NULL,"
 				+"bairro_vara VARCHAR(32),"
 				+"cidade VARCHAR(32),"
 				+"abreviacao VARCHAR(12),"
 				+"uf VARCHAR(2),"
-				+"telefone 	INTEGER,"
-				+"cep INTEGER)";
+				+"telefone INT,"
+				+"cep INT)";
+		
 		executor.execute(create);
 	}
 	
@@ -124,7 +131,8 @@ public class BancoTeste{
 		String create = "CREATE TABLE juiz_vara"
 				+ "(codJuiz INT NOT NULL CONSTRAINT codJ_PK REFERENCES oficioJuiz,"
 				+ "codVara INT NOT NULL,"
-				+ "FOREIGN KEY (codVara)  REFERENCES varaOficio(COD)"
+				+ "FOREIGN KEY (codVara)  REFERENCES varaOficio(COD),"
+				+ "CONSTRAINT codJuizVara_PK PRIMARY KEY(codJuiz, codVara)"
 				+ ")";
 		executor.execute(create);
 	}
